@@ -1,0 +1,11 @@
+HAR HUB - dong goi thanh .exe (Windows)
+
+1) Cai Node.js ban LTS: https://nodejs.org
+2) Giai nen thu muc nay, mo Terminal/CMD ngay trong thu muc.
+3) npm install
+4) npm start        (chay thu, kiem tra YouTube/ghi chu)
+5) npm run build    (tao bo cai dat)
+6) Lay file trong thu muc dist/  ->  "HAR HUB Setup 1.0.0.exe"
+
+Muon sua web: sua index.html roi build lai.
+Du lieu luu trong AppData\Roaming\har-hub (giu nguyen khi cap nhat app).
