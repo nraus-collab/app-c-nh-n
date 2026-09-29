@@ -1,0 +1,21 @@
+{
+  "name": "har-hub",
+  "version": "1.0.0",
+  "description": "HAR HUB - personal study hub",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.har.hub",
+    "productName": "HAR HUB",
+    "files": ["main.js", "index.html"],
+    "win": { "target": "nsis" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
+}

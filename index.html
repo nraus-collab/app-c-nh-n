@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HAR HUB</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#07070a;--fg:#f4f4f6;--mut:#8b8b96;--a:#ff2d55;--gl:rgba(255,255,255,.05);--bd:rgba(255,255,255,.12);color-scheme:dark}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+[hidden]{display:none!important}
+#bgl{position:fixed;inset:-20px;z-index:0;background:#07070a;transition:background .6s}
+#bgo{position:fixed;inset:0;z-index:0;background:radial-gradient(60% 45% at 50% 0,color-mix(in srgb,var(--a) 20%,transparent),transparent)}
+button,input,textarea{font:inherit;color:inherit}button{cursor:pointer}
+.hud{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:20px;right:20px;display:flex;justify-content:space-between;font:11px ui-monospace,monospace;letter-spacing:.15em;color:var(--mut);z-index:20;pointer-events:none}
+.hud b{color:var(--fg)}#clk{pointer-events:auto;cursor:pointer}
+.view{position:fixed;inset:0;z-index:5;overflow-y:auto;padding:calc(64px + env(safe-area-inset-top,0px)) 18px 130px;display:none}.view.on{display:block}
+.in{max-width:860px;margin:0 auto}
+.rv{animation:up .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes up{from{opacity:0;transform:translateY(22px)}}@keyframes grow{from{height:0}}@keyframes gw{from{width:0}}
+.na *{animation:none!important;transition:none!important}
+.tag{font:11px ui-monospace,monospace;letter-spacing:.25em;color:var(--a)}
+h2.t{font-size:clamp(32px,8vw,60px);letter-spacing:-.04em;margin:4px 0 0;line-height:1}
+.mut{color:var(--mut)}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+.card{background:var(--gl);border:1px solid var(--bd);border-radius:18px;padding:18px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .3s,border-color .3s}
+#lock{position:fixed;inset:0;z-index:999;background:#07070a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;text-align:center}
+#lock input{width:220px;text-align:center;font-size:24px;letter-spacing:.5em;padding:14px 10px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:12px;color:var(--fg);outline:none}
+#lock input:focus{border-color:var(--a)}
+#lock.shake{animation:shk .4s}
+@keyframes shk{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.plist{display:flex;flex-direction:column;gap:14px}
+.plist .pc{display:flex;gap:16px;align-items:flex-start;width:100%}
+.plist .pc img{width:180px;height:130px;object-fit:cover;border-radius:12px;flex:none;margin:0}
+.plist .pc .pcb{flex:1;min-width:0}
+.plist .pc h3{margin:0 0 8px;font-size:22px}
+.plist .pc p{-webkit-line-clamp:5;margin:0 0 10px;font-size:14px}
+@media (max-width:640px){.plist .pc{flex-direction:column}.plist .pc img{width:100%;height:180px}}
+.ttwrap{overflow-x:auto}
+table.tt{border-collapse:collapse;width:100%;min-width:660px}
+table.tt th,table.tt td{border:1px solid var(--bd);padding:6px;text-align:center;font-size:12px}
+table.tt th{color:var(--mut);font-weight:600;background:rgba(255,255,255,.03)}
+table.tt select{width:100%;background:transparent;border:0;color:var(--fg);font-size:11.5px;padding:7px 2px;text-align:center}
+table.tt select:focus{outline:1px solid var(--a);border-radius:6px}
+.view.slide{display:block!important;transition:transform .42s cubic-bezier(.65,0,.35,1)}
+.ng .card{backdrop-filter:none;background:#14141a}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.ib{width:44px;height:44px;border-radius:14px;border:1px solid var(--bd);background:var(--gl);font-size:20px;transition:.25s;flex:none}
+.ib:hover{background:var(--a);border-color:var(--a);transform:scale(1.08)}
+.b{padding:11px 20px;border-radius:99px;border:1px solid var(--bd);background:var(--gl);font-size:12px;letter-spacing:.12em;transition:.25s}
+.b.p{background:var(--a);border-color:var(--a)}.b:hover{transform:translateY(-2px)}
+.seg{display:inline-flex;padding:4px;border:1px solid var(--bd);border-radius:99px;background:var(--gl);margin-bottom:18px}
+.seg button{border:0;background:none;padding:9px 20px;border-radius:99px;font-size:12px;letter-spacing:.15em;color:var(--mut);transition:.3s}.seg .on{background:var(--a);color:#fff}
+.info div{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--bd);align-items:center}.info div:last-child{border:0}
+.info span{color:var(--mut);font-size:13px}.info b{font-weight:600;text-align:right;word-break:break-word}
+input.s,textarea,input.ti{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;outline:none;resize:vertical}
+input.s:focus,textarea:focus{border-color:var(--a)}.info input{max-width:60%;text-align:right}
+.big{font-size:clamp(28px,7vw,44px);font-weight:800;letter-spacing:-.03em;margin:6px 0 2px}
+.pc{cursor:pointer}.pc:hover,.sr:hover,.nr:hover{transform:translateY(-4px);border-color:var(--a)}
+.pc img,.gi img{width:100%;height:150px;object-fit:cover;border-radius:12px;margin-bottom:10px;display:block}
+.pc h3{margin:0 0 6px}.pc p{margin:0 0 10px;color:var(--mut);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.meta{font:11px ui-monospace,monospace;color:var(--mut)}
+.sr,.nr{display:flex;align-items:center;gap:14px;padding:18px;margin-bottom:10px;cursor:pointer}
+.sr em{font:13px ui-monospace,monospace;color:var(--mut);font-style:normal}.sr h3,.nr h3{margin:0;font-size:20px}.sr .meta,.nr .meta{margin-left:auto;text-align:right}
+.nr h3{font-size:18px}.nr div{min-width:0}.nr .x{margin-left:10px;border:0;background:none;color:var(--mut);font-size:18px}.nr .x:hover{color:var(--a)}
+.ti{font-size:32px;font-weight:800;letter-spacing:-.03em;background:transparent!important;border:0!important;border-bottom:1px solid var(--bd)!important;border-radius:0!important;padding:8px 0!important}
+.ce{min-height:50vh;outline:none;font-size:16px;line-height:1.7;padding:14px 2px;white-space:pre-wrap;word-break:break-word}
+.ce:empty:before{content:attr(data-ph);color:var(--mut)}
+.tb{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}.tb button{padding:6px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--gl);font-size:12px}.tb button:hover{background:var(--a)}
+#cm{position:fixed;z-index:90;min-width:160px;background:#16161c;border:1px solid var(--bd);border-radius:12px;padding:6px;display:none;box-shadow:0 20px 50px #000a}
+#cm button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 12px;border-radius:8px;font-size:13px}#cm button:hover{background:var(--a)}#cm hr{border:0;border-top:1px solid var(--bd);margin:4px 0}
+.chart{display:flex;align-items:flex-end;gap:8px;height:150px;margin-top:14px}.chart div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:6px;font:10px ui-monospace,monospace;color:var(--mut)}
+.chart i{width:100%;border-radius:8px 8px 3px 3px;background:linear-gradient(var(--a),color-mix(in srgb,var(--a) 30%,transparent));animation:grow .8s both;min-height:3px}.chart .td{color:var(--fg)}
+.pb{margin-bottom:14px}.pb div{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}.pb u{display:block;height:8px;background:var(--bd);border-radius:8px;overflow:hidden;text-decoration:none}.pb i{display:block;height:100%;background:var(--a);border-radius:8px;animation:gw 1s both}
+.ev{padding:9px 0;border-bottom:1px solid var(--bd);font-size:14px}.ev span{display:block}
+#pbox iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:14px;display:block;margin-bottom:12px;background:#000}
+input[type=range]{width:100%;accent-color:var(--a)}
+.gi{cursor:pointer}.gi:hover{transform:translateY(-4px);border-color:var(--a)}.gi b{display:block}
+#md,#lb{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:.35s;overflow-y:auto}
+#md.on,#lb.on{opacity:1;pointer-events:auto}#md .card{max-width:460px;width:100%;background:#101015;margin:auto;transform:translateY(30px);transition:.4s cubic-bezier(.2,.8,.2,1);max-height:92vh;overflow-y:auto}#md.on .card{transform:none}
+#md .card.wide{max-width:1100px;width:96vw}
+.bigta{min-height:42vh;font-size:15px;line-height:1.6}
+#md label{display:block;font:11px ui-monospace,monospace;letter-spacing:.2em;color:var(--mut);margin:14px 0 6px}#md h3{margin:0}
+.pvw{max-width:100%;max-height:180px;border-radius:12px;margin-top:8px}.btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+#lb{flex-direction:column;gap:14px}#lb img{max-width:100%;max-height:75vh;border-radius:14px}
+#dock{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:4px;padding:8px;background:rgba(20,20,26,.65);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--bd);border-radius:22px;z-index:30}
+#dock button{position:relative;width:52px;height:48px;border-radius:15px;border:0;background:none;color:var(--mut);display:grid;place-items:center;transition:transform .3s cubic-bezier(.3,1.6,.5,1),background .3s,color .3s}
+#dock svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#dock button:hover{transform:translateY(-7px) scale(1.15);color:var(--fg)}#dock button.on{background:var(--a);color:#fff}
+#dock button:after{content:attr(data-n);position:absolute;bottom:60px;font:10px ui-monospace,monospace;letter-spacing:.15em;padding:4px 8px;border-radius:8px;background:#000;border:1px solid var(--bd);opacity:0;pointer-events:none;transition:.25s;white-space:nowrap}#dock button:hover:after{opacity:1}
+#toast{position:fixed;left:50%;top:70px;transform:translate(-50%,-30px);background:#111;border:1px solid var(--bd);padding:10px 18px;border-radius:99px;z-index:99;opacity:0;transition:.35s;font-size:13px;pointer-events:none}#toast.on{opacity:1;transform:translate(-50%,0)}
+.sw{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sw button{width:34px;height:34px;border-radius:50%;border:2px solid transparent}.sw button.on{border-color:#fff}
+.opt{display:flex;gap:8px;flex-wrap:wrap}.opt button{padding:9px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--gl);font-size:13px}.opt .on{background:var(--a);border-color:var(--a)}
+.cfg{margin-bottom:14px}.cfg>.tag{display:block;margin-bottom:12px}.tr{display:flex;justify-content:space-between;align-items:center;padding:8px 0}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div id="lock"><div class="tag">HAR HUB</div><div class="big" style="font-size:26px;margin:0">Nhập mật khẩu</div><input id="pw" type="password" inputmode="numeric" maxlength="12" placeholder="••••••"><button class="b p" id="pwok">MỞ KHOÁ</button><p class="meta" id="pwerr" style="color:var(--a);min-height:14px"></p></div>
+<div id="bgl"></div><div id="bgo"></div>
+<div class="hud"><span>HAR_HUB <b>v2.0</b></span><b id="clk"></b></div>
+<section class="view on" id="v-h"></section><section class="view" id="v-w"></section><section class="view" id="v-a"></section>
+<section class="view" id="v-l"><div class="in">
+<div class="row rv"><div><div class="tag">MUSIC &amp; GALLERY</div><h2 class="t">Music</h2></div><button class="b" id="aib" data-a="aitoggle">▶ BẬT AI</button></div>
+<p class="meta rv" style="margin:-8px 0 14px">AI sẽ tự phát lần lượt các link phía dưới, từ trên xuống, và tự chuyển bài khi video hiện tại phát hết.</p>
+<div class="card rv" style="--i:1"><div id="pbox"><div class="mut" style="padding:26px 0;text-align:center">Dán link YouTube bên dưới rồi bấm ADD</div></div>
+<div class="row" style="gap:8px;margin:0 0 12px;justify-content:flex-start"><span class="meta">BẮT ĐẦU TỪ</span><input class="s" id="st0" placeholder="mm:ss" style="max-width:110px"><button class="b" data-a="mgo">GO</button></div>
+<div style="display:flex;gap:8px"><input class="s" id="mu" placeholder="https://www.youtube.com/watch?v=..."><button class="b p" data-a="madd">ADD</button></div>
+<div id="ml"></div><p class="meta" style="margin:12px 0 0">Kéo thanh tiến trình của YouTube để tua, hoặc nhập mm:ss rồi bấm GO để phát từ đoạn đó.</p></div>
+<div class="row" style="margin:34px 0 14px"><h2 class="t" style="font-size:36px">Gallery</h2><button class="ib" data-a="gadd">＋</button></div><div class="grid" id="gal"></div></div></section>
+<section class="view" id="v-g"></section>
+<section class="view" id="v-s"></section>
+<div id="dock"></div><div id="md"></div><div id="lb"></div><div id="toast"></div>
+<div id="cm"><button data-f="copy">Copy</button><button data-f="paste">Paste</button><hr><button data-f="normal">Normal</button><button data-f="large">Large</button><button data-f="small">Small</button><hr><button data-f="b"><b>Bold</b></button><button data-f="i"><i>Italic</i></button><button data-f="u"><u>Underline</u></button></div>
+<script>
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9),p2=n=>String(n).padStart(2,'0');
+const fmt=t=>{const d=new Date(t);return `${p2(d.getDate())}/${p2(d.getMonth()+1)}/${d.getFullYear()} • ${p2(d.getHours())}:${p2(d.getMinutes())}`};
+const dk=t=>{const d=new Date(t);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const cnt=s=>(s.trim().match(/\S+/g)||[]).length,R=i=>`class="rv" style="--i:${i}"`;
+// ---------- state ----------
+const SUBJ=['Toán 11','Văn 11','Anh 11','Lý 11','Hóa 11','Toán 12','Văn 12','Anh 12','Lý 12','Hóa 12'];
+const DEF={profile:{name:'Hờ A Rầu',phone:'0966233280',born:'2009',status:'Student',grade:'12',school:'',city:'',email:'',goal:'',langs:'Vietnamese, English',skills:'',bio:'',u:0},projects:[],subjects:SUBJ.map((n,i)=>({id:'m'+i,name:n})),notes:[],gallery:[],music:[],log:{},ev:[],tt:{},gsearch:[],set:{bg:'black',bgImg:'',accent:'#ff2d55',glass:true,anim:true,op:60,bl:8,goal:1000}};
+let S={};try{S=JSON.parse(localStorage.getItem('har_hub_v1'))||{}}catch(e){}
+S=Object.assign(structuredClone(DEF),S);S.set=Object.assign({},DEF.set,S.set);S.profile=Object.assign({},DEF.profile,S.profile);S.tt=S.tt||{};S.gsearch=S.gsearch||[];
+{const old=S.subjects;S.subjects=DEF.subjects;S.notes.forEach(n=>{const o=old.find(x=>x.id===n.sid),m=o&&DEF.subjects.find(x=>x.name===o.name);if(m)n.sid=m.id})}
+let tt;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200)};
+const save=()=>{try{localStorage.setItem('har_hub_v1',JSON.stringify(S))}catch(e){toast('Bộ nhớ trình duyệt đầy — hãy xoá bớt ảnh')}};
+const ev=x=>{S.ev.unshift({t:Date.now(),x});S.ev=S.ev.slice(0,60)};
+const sn=id=>(S.subjects.find(s=>s.id===id)||{}).name||'';
+const ui={tab:'h',sub:'explore',ed:false,mask:true,subj:null,note:null,tt:null};
+const ORDER=['h','w','a','l','g','s'];
+const cmp=(f,m=1000)=>new Promise(r=>{const rd=new FileReader();rd.onload=()=>{const i=new Image();i.onload=()=>{const k=Math.min(1,m/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.72))};i.src=rd.result};rd.readAsDataURL(f)});
+// ---------- shell ----------
+const IC={h:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',w:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21h15M9 8h6"/>',a:'<path d="M4 20V11M10 20V4M16 20v-7M22 20H2"/>',l:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',g:'',s:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'};
+const NM={h:'PROFILE',w:'STUDY',a:'ANALYSIS',l:'MUSIC',g:'GOOGLE',s:'SETTINGS'};
+const GICON=`<svg viewBox="0 0 48 48" style="stroke:none"><circle cx="24" cy="24" r="24" fill="#fff"/><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h11.8c-.5 2.7-2 5-4.3 6.6v5.5h7C42.6 37 45.1 31.3 45.1 24.5z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.7-3.9-12.5-9.2H4.3v5.7C7.9 41 15.3 46 24 46z"/><path fill="#FBBC05" d="M11.5 27.9c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.3C2.8 16.9 2 20.3 2 23.8s.8 6.9 2.3 9.9z"/><path fill="#EA4335" d="M24 10.7c3.2 0 6.1 1.1 8.4 3.3l6.2-6.2C34.9 4.2 29.9 2 24 2 15.3 2 7.9 7 4.3 14l7.2 5.7C13.3 14.6 18.2 10.7 24 10.7z"/></svg>`;
+$('#dock').innerHTML=Object.keys(IC).map(k=>k==='g'?`<button data-a="tab" data-v="g" data-n="${NM.g}">${GICON}</button>`:`<button data-a="tab" data-v="${k}" data-n="${NM[k]}"><svg viewBox="0 0 24 24">${IC[k]}</svg></button>`).join('');
+setInterval(()=>$('#clk').textContent=new Date().toLocaleTimeString('vi-VN',{hour12:false}),1000);
+// ---------- stopwatch / countdown timer (bấm vào đồng hồ để mở) ----------
+let clkMode='up',swT=0,swRun=false,swInt=null,cdInitial=300,cdT=300,cdRun=false,cdInt=null;
+function beep(n=3){try{const ctx=new (window.AudioContext||window.webkitAudioContext)();for(let i=0;i<n;i++){const t=ctx.currentTime+i*0.4,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=880;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.28);o.start(t);o.stop(t+.3)}}catch(e){}}
+function swTick(){swT++;const e=$('#swd');if(e)e.textContent=f2b(swT)}
+function cdTick(){cdT--;const e=$('#cdd');if(e)e.textContent=f2b(Math.max(0,cdT));if(cdT<=0){clearInterval(cdInt);cdInt=null;cdRun=false;cdT=cdInitial;beep();toast('⏰ Hết giờ!');renderClk()}}
+function f2b(s){s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=Math.floor(s%60);return (h?p2(h)+':':'')+p2(m)+':'+p2(ss)}
+function clockModal(){modal(`<h3>Đồng hồ &amp; hẹn giờ</h3><div class="seg" style="margin:14px 0 4px">${[['up','ĐẾM LÊN'],['down','ĐẾM NGƯỢC']].map(([k,l])=>`<button class="${clkMode===k?'on':''}" data-a="clkmode" data-v="${k}">${l}</button>`).join('')}</div><div id="clkbody"></div><div class="btns"><button class="b" data-a="close">ĐÓNG</button></div>`);renderClk()}
+function renderClk(){const el=$('#clkbody');if(!el)return;
+ if(clkMode==='up')el.innerHTML=`<div class="big" style="text-align:center;font-size:52px;margin:10px 0" id="swd">${f2b(swT)}</div><div class="btns" style="justify-content:center"><button class="b p" data-a="swtoggle">${swRun?'TẠM DỪNG':'BẮT ĐẦU'}</button><button class="b" data-a="swreset">ĐẶT LẠI</button></div>`;
+ else el.innerHTML=`<div class="row" style="justify-content:center;gap:8px;margin:6px 0"><input class="s" id="cdmin" type="number" min="1" value="${Math.round(cdInitial/60)}" style="width:90px;text-align:center" ${cdRun?'disabled':''}><span class="mut">phút</span></div><div class="big" style="text-align:center;font-size:52px;margin:6px 0" id="cdd">${f2b(cdT)}</div><div class="btns" style="justify-content:center"><button class="b p" data-a="cdtoggle">${cdRun?'TẠM DỪNG':'BẮT ĐẦU'}</button><button class="b" data-a="cdreset">ĐẶT LẠI</button></div>`}
+$('#clk').addEventListener('click',clockModal);
+function apply(){const s=S.set;document.documentElement.style.setProperty('--a',s.accent);
+ $('#bgl').style.cssText=s.bg==='img'&&s.bgImg?`background:url(${s.bgImg}) center/cover;opacity:${s.op/100};filter:blur(${s.bl}px)`:s.bg==='grad'?`background:linear-gradient(135deg,#07070a,color-mix(in srgb,${s.accent} 35%,#07070a) 60%,#07070a)`:s.bg==='gray'?'background:#1c1d24':'background:#07070a';
+ document.body.classList.toggle('na',!s.anim);document.body.classList.toggle('ng',!s.glass)}
+function draw(){({h:rH,w:rW,a:rA,l:rG,g:rGg,s:rS})[ui.tab]()}
+function show(v){ui.tab=v;$$('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));$$('#dock button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$('.view.on').scrollTop=0;draw()}
+let lock=false;
+function nav(v){if(v===ui.tab||lock||ORDER.indexOf(v)<0)return;lock=true;
+ const i=ORDER.indexOf(ui.tab),j=ORDER.indexOf(v),dir=j>i?1:-1;
+ const oldEl=$('#v-'+ui.tab);ui.tab=v;draw();const newEl=$('#v-'+v);
+ $$('#dock button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ oldEl.classList.add('slide','on');newEl.classList.add('slide','on');
+ newEl.style.transform='translateX('+(dir*100)+'%)';newEl.scrollTop=0;
+ oldEl.getBoundingClientRect();
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{oldEl.style.transform='translateX('+(-dir*100)+'%)';newEl.style.transform='translateX(0)'}));
+ setTimeout(()=>{oldEl.classList.remove('on','slide');oldEl.style.transform='';newEl.classList.remove('slide');newEl.style.transform='';lock=false},440)}
+let sx0=0,sy0=0,swBlock=false;
+const SWIPE_BLOCK='.card,.sr,.nr,.pc,.gi,.ttwrap,table,.tb,.ce,.seg,.info,.pb,.chart,.orb,.ev,#cm,#md,#lb,#dock,input,textarea,select,button,a';
+addEventListener('touchstart',e=>{sx0=e.touches[0].clientX;sy0=e.touches[0].clientY;swBlock=!!e.target.closest(SWIPE_BLOCK)},{passive:true});
+addEventListener('touchend',e=>{if(lock||swBlock)return;const dx=e.changedTouches[0].clientX-sx0,dy=e.changedTouches[0].clientY-sy0;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.2)return;const i=ORDER.indexOf(ui.tab),j=i+(dx<0?1:-1);if(j>=0&&j<ORDER.length)nav(ORDER[j])},{passive:true});
+const head=(tag,title,btn)=>`<div class="row rv"><div><div class="tag">${tag}</div><h2 class="t">${title}</h2></div>${btn||''}</div>`;
+// ---------- H: explore + projects ----------
+function rH(){const p=S.profile,v=$('#v-h');let h=`<div class="in"><div class="seg rv">${['explore','projects'].map(k=>`<button class="${ui.sub===k?'on':''}" data-a="sub" data-v="${k}">${k.toUpperCase()}</button>`).join('')}</div>`;
+ if(ui.sub==='explore'){
+  const F=[['phone','Phone'],['born','Born (year)'],['status','Status'],['grade','Grade'],['school','School'],['city','Hometown'],['email','Email'],['goal','Goal'],['langs','Languages'],['skills','Skills'],['bio','About me']];
+  const val=(k)=>k==='phone'&&ui.mask&&p.phone?p.phone.slice(0,4)+'••••'+p.phone.slice(-2):(p[k]||'—');
+  h+=head('EXPLORE','Personal Information',`<button class="b ${ui.ed?'p':''}" data-a="${ui.ed?'saveprof':'ed'}">${ui.ed?'SAVE':'EDIT PROFILE'}</button>`)+
+  `<div class="card rv" style="--i:1"><div class="tag">STUDENT • CREATOR • LEARNER</div>${ui.ed?`<input class="s" data-k="name" value="${esc(p.name)}" style="margin-top:10px">`:`<div class="big">${esc(p.name)}</div>`}<div class="mut">Grade ${esc(p.grade)} student · born ${esc(p.born)}</div></div>
+  <div class="card info rv" style="--i:2;margin-top:12px">${F.map(([k,l])=>`<div><span>${l}</span>${ui.ed?`<input class="s" data-k="${k}" value="${esc(p[k])}" placeholder="—">`:`<b>${esc(val(k))}${k==='phone'&&p.phone?` <button class="b" style="padding:3px 10px;margin-left:6px" data-a="mask">${ui.mask?'SHOW':'HIDE'}</button>`:''}</b>`}</div>`).join('')}</div>`}
+ else{h+=head('PROJECTS','Interests & Passions',`<button class="ib" data-a="proj">＋</button>`)+`<div class="plist">${S.projects.map((x,i)=>`<div ${R(i+1).replace('class="rv"','class="rv card pc"')} data-a="proj" data-id="${x.id}">${x.img?`<img src="${x.img}">`:''}<div class="pcb"><h3>${esc(x.title)||'Untitled'}</h3><p>${esc(x.body)}</p><div class="meta">Created ${fmt(x.c)}${x.u>x.c?`<br>Edited ${fmt(x.u)}`:''}</div></div></div>`).join('')||'<p class="mut rv">No projects yet. Tap ＋ to add your first interest.</p>'}</div>`}
+ v.innerHTML=h+'</div>'}
+function modal(h,wide){$('#md').innerHTML=`<div class="card${wide?' wide':''}">${h}</div>`;$('#md').classList.add('on')}
+let tmp='';
+const imgF=`<label>IMAGE</label><input type="file" id="mf" accept="image/*"><img id="mi" class="pvw" src="${'${T}'}">`;
+function pm(id){const p=S.projects.find(x=>x.id===id)||{};tmp=p.img||'';modal(`<h3>${id?'Edit':'New'} project</h3><label>TITLE</label><input id="pt" class="s" value="${esc(p.title)}"><label>CONTENT</label><textarea id="pb" class="bigta" rows="12">${esc(p.body)}</textarea><label>IMAGE</label><input type="file" id="mf" accept="image/*"><img id="mi" class="pvw" src="${tmp}" ${tmp?'':'hidden'}><div class="btns"><button class="b" data-a="close">CANCEL</button>${id?`<button class="b" data-a="pdel" data-id="${id}">DELETE</button>`:''}<button class="b p" data-a="psave" data-id="${id||''}">SAVE</button></div>`,true)}
+// ---------- W: study ----------
+function weekLabel(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(),n.getDate()-(n.getDay()+6)%7),e=new Date(m);e.setDate(m.getDate()+5);const f=d=>p2(d.getDate())+'/'+p2(d.getMonth()+1);return f(m)+'\u2013'+f(e)}
+function ttView(){const key=ui.tt,label=key==='sang'?'Buổi Sáng':'Buổi Chiều',days=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'],rows=5;
+ if(!S.tt[key])S.tt[key]=Array.from({length:rows},()=>Array(6).fill(''));
+ const grid=S.tt[key],opts=id=>`<option value="">—</option>`+S.subjects.map(s=>`<option value="${s.id}" ${id===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
+ return `<div class="row rv"><button class="ib" data-a="back">←</button><div><div class="tag">THỜI KHOÁ BIỂU · TUẦN ${weekLabel()}</div><h2 class="t" style="font-size:clamp(22px,5vw,34px)">${label}</h2></div><span style="width:44px"></span></div>
+ <div class="card rv ttwrap" style="--i:1"><table class="tt"><thead><tr><th></th>${days.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>
+ ${grid.map((r,ri)=>`<tr><th>Tiết ${ri+1}</th>${r.map((val,ci)=>`<td><select data-tt="${key}" data-r="${ri}" data-c="${ci}">${opts(val)}</select></td>`).join('')}</tr>`).join('')}
+ </tbody></table></div><p class="meta rv" style="--i:2;margin-top:10px">Đây là thời khoá biểu lặp lại hằng tuần theo môn học, chưa tách riêng theo từng tuần cụ thể trên lịch.</p>`}
+function rW(){const v=$('#v-w');let h='<div class="in">';
+ if(ui.note){const n=S.notes.find(x=>x.id===ui.note);h+=`<div class="row rv"><button class="ib" data-a="back">←</button><span class="meta" id="st">Saved ✓</span><button class="ib" data-a="ndel" data-id="${n.id}">🗑</button></div>
+ <div class="tag rv">TITLE</div><input id="nt" class="ti rv" placeholder="Tiêu đề" value="${esc(n.title)}"><div class="tag rv" style="margin-top:18px">CONTENT · ${esc(sn(n.sid))}</div>
+ <div class="tb rv">${[['normal','Normal'],['large','Large'],['small','Small'],['b','B'],['i','I'],['u','U']].map(([f,l])=>`<button data-f="${f}">${l}</button>`).join('')}</div>
+ <div id="nc" class="ce rv" contenteditable="true" data-ph="Viết nội dung ở đây… (bôi đen + chuột phải để đổi cỡ chữ)">${n.html}</div><div class="meta" id="wc">${n.w} words · created ${fmt(n.c)}</div>`}
+ else if(ui.subj){const ns=S.notes.filter(n=>n.sid===ui.subj).sort((a,b)=>b.c-a.c);
+  h+=`<div class="row rv"><button class="ib" data-a="back">←</button><h2 class="t" style="font-size:clamp(24px,6vw,44px)">${esc(sn(ui.subj))}</h2><button class="ib" data-a="nnew">＋</button></div>`+
+  (ns.map((n,i)=>`<div ${R(i+1).replace('class="rv"','class="rv card nr"')} data-a="note" data-id="${n.id}"><div><h3>${esc(n.title)||'Untitled'}</h3><div class="meta">${fmt(n.c)} · ${n.w} words</div></div><button class="x" data-a="ndel" data-id="${n.id}">✕</button></div>`).join('')||'<p class="mut rv" style="text-align:center;padding:60px 0">No notes yet</p>')}
+ else if(ui.tt){h+=ttView()}
+ else h+=`<div class="row rv"><div><div class="tag">STUDY</div><h2 class="t">Môn học</h2></div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="b" data-a="tt" data-v="sang">SÁNG</button><button class="b" data-a="tt" data-v="chieu">CHIỀU</button><button class="ib" data-a="subadd">＋</button></div></div>`+S.subjects.map((s,i)=>{const ns=S.notes.filter(n=>n.sid===s.id);return `<div ${R(i+1).replace('class="rv"','class="rv card sr"')} data-a="subj" data-id="${s.id}"><em>${p2(i+1)}</em><h3>${esc(s.name)}</h3><div class="meta">${ns.length} notes<br>${ns.reduce((a,n)=>a+n.w,0)} words</div></div>`}).join('');
+ v.innerHTML=h+'</div>'}
+let tm,pend;
+function flush(){if(pend){clearTimeout(tm);pend();pend=null}}
+function autosave(){const n=S.notes.find(x=>x.id===ui.note);$('#st').textContent='Saving…';clearTimeout(tm);pend=()=>{n.title=$('#nt').value;n.html=$('#nc').innerHTML;const w=cnt($('#nt').value+' '+$('#nc').innerText),d=w-n.w,k=dk(Date.now());if(d>0)S.log[k]=(S.log[k]||0)+d;n.w=w;n.u=Date.now();if(w>0&&!n.ev){n.ev=1;ev(`Wrote “${n.title||'Untitled'}” in ${sn(n.sid)}`)}save();const s=$('#st');if(s){s.textContent='Saved ✓';$('#wc').textContent=w+' words · created '+fmt(n.c)}};tm=setTimeout(()=>{pend();pend=null},600)}
+function fmtSel(k){const s=getSelection();if(!$('#nc')||!s.rangeCount||s.isCollapsed||!$('#nc').contains(s.anchorNode))return;
+ if(k==='copy')return document.execCommand('copy');
+ if(k==='paste')return navigator.clipboard.readText().then(t=>{$('#nc').focus();document.execCommand('insertText',false,t)}).catch(()=>toast('Trình duyệt chặn Paste — dùng Ctrl+V'));
+ if('biu'.includes(k))document.execCommand({b:'bold',i:'italic',u:'underline'}[k]);
+ else{const d=document.createElement('div');d.appendChild(s.getRangeAt(0).cloneContents());const h=d.innerHTML.replace(/font-size:[^;"]+;?/g,''),px={large:22,small:13}[k];document.execCommand('insertHTML',false,px?`<span style="font-size:${px}px">${h}</span>`:h)}
+ $('#nc').dispatchEvent(new Event('input',{bubbles:true}))}
+// ---------- A: analysis ----------
+function rA(){const g=S.set.goal,n0=new Date(),m=new Date(n0.getFullYear(),n0.getMonth(),n0.getDate()-(n0.getDay()+6)%7),ws=m.getTime(),we=ws+6048e5;
+ const days=[...Array(7)].map((_,i)=>{const d=new Date(m.getFullYear(),m.getMonth(),m.getDate()+i);return{l:['T2','T3','T4','T5','T6','T7','CN'][i],w:S.log[dk(d)]||0,td:dk(d)===dk(Date.now())}});
+ const mx=Math.max(1,...days.map(d=>d.w)),tw=days.reduce((a,d)=>a+d.w,0),inW=t=>t>=ws&&t<we;
+ const sj=S.subjects.map(s=>{const w=S.notes.filter(n=>n.sid===s.id).reduce((a,n)=>a+n.w,0);return{n:s.name,w,p:Math.min(100,Math.round(w/g*100))}});
+ const ov=Math.round(sj.reduce((a,s)=>a+s.p,0)/sj.length),top=[...sj].sort((a,b)=>b.w-a.w)[0],evs=S.ev.filter(e=>inW(e.t)).slice(0,8);
+ const stat=(b,l,i)=>`<div ${R(i).replace('class="rv"','class="rv card"')}><div class="big">${b}</div><div class="meta">${l}</div></div>`;
+ $('#v-a').innerHTML=`<div class="in">${head('ANALYSIS','This week')}<div class="grid">${stat(ov+'%','OVERALL PROGRESS (words / goal)',1)}${stat(tw,'WORDS WRITTEN',2)}${stat(S.notes.filter(n=>inW(n.c)).length,'NEW NOTES',3)}${stat(S.projects.filter(x=>inW(x.c)).length+S.gallery.filter(x=>inW(x.c)).length,'PROJECTS + PHOTOS ADDED',4)}</div>
+ <div class="card rv" style="--i:5;margin-top:12px"><div class="tag">WORDS PER DAY</div><div class="chart">${days.map(d=>`<div class="${d.td?'td':''}"><span>${d.w||''}</span><i style="height:${d.w/mx*100}%"></i>${d.l}</div>`).join('')}</div></div>
+ <div class="card rv" style="--i:6;margin-top:12px"><div class="tag" style="display:block;margin-bottom:14px">SUBJECT PROGRESS · GOAL ${g} WORDS EACH</div>${sj.map(s=>`<div class="pb"><div><span>${esc(s.n)}</span><span class="mut">${s.w} words · ${s.p}%</span></div><u><i style="width:${s.p}%"></i></u></div>`).join('')}${top.w?`<div class="meta">Most written: ${esc(top.n)}</div>`:''}</div>
+ <div class="card rv" style="--i:7;margin-top:12px"><div class="tag">DONE THIS WEEK</div>${(S.profile.u&&inW(S.profile.u)?'':'')}${evs.map(e=>`<div class="ev"><span>${esc(e.x)}</span><span class="meta">${fmt(e.t)}</span></div>`).join('')||'<p class="mut">Chưa có hoạt động nào trong tuần này.</p>'}</div></div>`}
+// ---------- L: music + gallery ----------
+let cur=null;
+const vid=u=>{const m=String(u).match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([\w-]{11})/);return m&&m[1]};
+function rM(){$('#ml').innerHTML=S.music.map(t=>`<div class="ev" style="display:flex;justify-content:space-between;gap:8px"><a href="#" data-a="mplay" data-id="${t.id}" style="color:var(--fg);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${esc(t.u)}</a><button class="x" style="border:0;background:none;color:var(--mut)" data-a="mdel" data-id="${t.id}">✕</button></div>`).join('')}
+const tsec=s=>String(s).trim().split(':').map(Number).filter(n=>!isNaN(n)).reduce((a,n)=>a*60+n,0);
+function playT(id,st=0){aiStop();const t=S.music.find(x=>x.id===id);if(!t)return;cur=t;
+ $('#pbox').innerHTML=`<iframe id="yf" src="https://www.youtube.com/embed/${encodeURIComponent(t.v)}${st>0?'?start='+st+'&autoplay=1':''}" title="YouTube video player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`}
+// ---------- AI auto-playlist (dùng YouTube IFrame Player API để biết khi nào video phát xong) ----------
+let aiOn=false,aiIdx=0,ytPlayer=null,ytReady=false,ytLoading=false;
+function loadYT(cb){if(window.YT&&YT.Player){ytReady=true;return cb&&cb()}
+ if(!ytLoading){ytLoading=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}
+ window.onYouTubeIframeAPIReady=()=>{ytReady=true;cb&&cb()}}
+function aiBtn(){const b=$('#aib');if(!b)return;b.textContent=aiOn?'⏸ TẮT AI':'▶ BẬT AI';b.classList.toggle('p',aiOn)}
+function aiStop(){if(aiOn){aiOn=false;aiBtn()}}
+function aiToggle(){if(aiOn){aiOn=false;aiBtn();if(ytPlayer&&ytPlayer.stopVideo)ytPlayer.stopVideo();return}
+ if(!S.music.length)return toast('Chưa có link nào trong danh sách bên dưới');
+ aiOn=true;aiIdx=0;aiBtn();toast('AI: đang lấy link đầu tiên…');loadYT(()=>aiStep())}
+function aiStep(){if(!aiOn||!S.music.length)return;const t=S.music[aiIdx%S.music.length];
+ toast('AI: nhập link · add · phát trong 0.5s — '+t.u);
+ setTimeout(()=>{if(!aiOn)return;
+  if(!ytPlayer){$('#pbox').innerHTML='<div id="ytp"></div>';ytPlayer=new YT.Player('ytp',{videoId:t.v,playerVars:{autoplay:1,playsinline:1,rel:0},events:{onReady:e=>e.target.playVideo(),onStateChange:onAIState}})}
+  else{ytPlayer.loadVideoById(t.v);ytPlayer.playVideo()}
+ },500)}
+function onAIState(e){if(!aiOn)return;if(e.data===YT.PlayerState.ENDED){aiIdx=(aiIdx+1)%S.music.length;aiStep()}}
+function rG(){$('#gal').innerHTML=S.gallery.map((x,i)=>`<div class="card gi rv" style="--i:${i}" data-a="gview" data-id="${x.id}"><img src="${x.img}"><b>${esc(x.title)}</b><div class="meta">${fmt(x.c)}</div></div>`).join('')||'<p class="mut">Chưa có ảnh. Bấm ＋ để đăng ảnh kèm tiêu đề.</p>';rM()}
+// ---------- G: Google quick access ----------
+const GAPPS=[{n:'Google Search',i:'\uD83D\uDD0D',u:'https://www.google.com'},{n:'Gmail',i:'\u2709\uFE0F',u:'https://mail.google.com'},{n:'Drive',i:'\uD83D\uDDC2\uFE0F',u:'https://drive.google.com'},{n:'Docs',i:'\uD83D\uDCC4',u:'https://docs.google.com'},{n:'Sheets',i:'\uD83D\uDCCA',u:'https://sheets.google.com'},{n:'Slides',i:'\uD83D\uDCFD\uFE0F',u:'https://slides.google.com'},{n:'Maps',i:'\uD83D\uDDFA\uFE0F',u:'https://maps.google.com'},{n:'Dịch',i:'\uD83C\uDF10',u:'https://translate.google.com'},{n:'Lịch',i:'\uD83D\uDCC5',u:'https://calendar.google.com'},{n:'YouTube',i:'\u25B6\uFE0F',u:'https://youtube.com'}];
+function rGg(){const v=$('#v-g'),hs=S.gsearch||[];
+ v.innerHTML=`<div class="in">${head('GOOGLE','Tìm kiếm nhanh')}
+ <div class="card rv" style="--i:1"><div style="display:flex;gap:10px"><input class="s" id="gq" placeholder="Tìm kiếm trên Google…" style="flex:1"><button class="b p" data-a="gsearch">TÌM</button></div>
+ <p class="meta" style="margin-top:10px">Google không cho hiển thị kết quả tìm kiếm bên trong ứng dụng khác, nên kết quả sẽ mở ở tab/cửa sổ mới.</p>
+ ${hs.length?`<div class="tag" style="display:block;margin:16px 0 8px">TÌM GẦN ĐÂY</div>`+hs.map((q,i)=>`<div class="ev" style="display:flex;justify-content:space-between;gap:8px"><a href="#" data-a="gagain" data-v="${esc(q)}" style="color:var(--fg);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(q)}</a><button class="x" style="border:0;background:none;color:var(--mut)" data-a="gsdel" data-i="${i}">✕</button></div>`).join(''):''}</div>
+ <div class="tag rv" style="--i:2;display:block;margin:18px 0 10px">TRUY CẬP NHANH</div>
+ <div class="grid rv" style="--i:2">${GAPPS.map(x=>`<div class="card" data-a="gopen" data-v="${x.u}" style="cursor:pointer;text-align:center;padding:20px 10px"><div style="font-size:26px">${x.i}</div><div style="margin-top:8px;font-weight:600;font-size:13px">${x.n}</div></div>`).join('')}</div></div>`}
+// ---------- S: settings ----------
+function rS(){const s=S.set,sw=['#ff2d55','#0a84ff','#bf5af2','#30d158','#ff9f0a'];
+ $('#v-s').innerHTML=`<div class="in">${head('SETTINGS','Appearance')}
+ <div class="card cfg rv" style="--i:1"><span class="tag">BACKGROUND</span><div class="opt">${[['black','Black'],['gray','Dark gray'],['grad','Gradient'],['img','Image']].map(([k,l])=>`<button class="${s.bg===k?'on':''}" data-a="bg" data-v="${k}">${l}</button>`).join('')}</div>
+ ${s.bg==='img'?`<label class="meta" style="display:block;margin:14px 0 6px">UPLOAD IMAGE</label><input type="file" id="bf" accept="image/*"><div class="tr"><span>Opacity ${s.op}%</span><input type="range" data-s="op" min="10" max="100" value="${s.op}" style="width:55%"></div><div class="tr"><span>Blur ${s.bl}px</span><input type="range" data-s="bl" min="0" max="30" value="${s.bl}" style="width:55%"></div>`:''}</div>
+ <div class="card cfg rv" style="--i:2"><span class="tag">ACCENT COLOR</span><div class="sw">${sw.map(c=>`<button style="background:${c}" class="${s.accent===c?'on':''}" data-a="acc" data-v="${c}"></button>`).join('')}<input type="color" data-s="accent" value="${s.accent}"></div></div>
+ <div class="card cfg rv" style="--i:3"><span class="tag">INTERFACE</span>${[['glass','Glass effect'],['anim','Animations']].map(([k,l])=>`<div class="tr"><span>${l}</span><input type="checkbox" data-t="${k}" ${s[k]?'checked':''}></div>`).join('')}</div>
+ <div class="card cfg rv" style="--i:4"><span class="tag">STUDY GOAL</span><div class="tr"><span>Words per subject (=100%)</span><input class="s" type="number" min="50" data-s="goal" value="${s.goal}" style="width:110px"></div></div>
+ <div class="card cfg rv" style="--i:5"><span class="tag">DATA</span><p class="meta">Dữ liệu lưu trong trình duyệt/thiết bị này, không tự đồng bộ. Dùng mã bên dưới để chuyển dữ liệu thủ công sang thiết bị khác.</p><button class="b" data-a="reset">RESET ALL DATA</button></div>
+ <div class="card cfg rv" style="--i:6"><span class="tag">CHUYỂN DỮ LIỆU SANG THIẾT BỊ KHÁC</span><label style="display:block;margin:10px 0 6px" class="meta">MÃ CỦA THIẾT BỊ NÀY</label><textarea id="exp" rows="3" readonly style="font-size:11px" onclick="this.select()">${btoa(unescape(encodeURIComponent(JSON.stringify(S))))}</textarea><div class="btns" style="justify-content:flex-start;margin-top:8px"><button class="b" data-a="expcopy">COPY MÃ</button></div>
+ <label style="display:block;margin:16px 0 6px" class="meta">DÁN MÃ TỪ THIẾT BỊ KHÁC</label><textarea id="imp" rows="3" placeholder="Dán mã đã copy ở thiết bị kia vào đây"></textarea><div class="btns" style="justify-content:flex-start;margin-top:8px"><button class="b p" data-a="impgo">IMPORT (GHI ĐÈ DỮ LIỆU HIỆN TẠI)</button></div></div></div>`}
+// ---------- events ----------
+document.addEventListener('click',async e=>{
+ const cmB=e.target.closest('[data-f]');if(cmB){fmtSel(cmB.dataset.f);$('#cm').style.display='none';return}
+ $('#cm').style.display='none';const b=e.target.closest('[data-a]');if(!b){if(e.target.id==='md')closeM();if(e.target.id==='lb')$('#lb').classList.remove('on');return}
+ const a=b.dataset.a,id=b.dataset.id,v=b.dataset.v;
+ if(a==='tab')nav(v);
+ else if(a==='sub'){ui.sub=v;ui.ed=false;rH()}else if(a==='ed'){ui.ed=true;rH()}else if(a==='mask'){ui.mask=!ui.mask;rH()}
+ else if(a==='saveprof'){$$('[data-k]').forEach(i=>S.profile[i.dataset.k]=i.value.trim());S.profile.u=Date.now();ev('Updated personal information');save();ui.ed=false;rH();toast('Saved ✓')}
+ else if(a==='proj')pm(id);else if(a==='close')closeM();
+ else if(a==='psave'){const t=$('#pt').value.trim();if(!t&&!$('#pb').value.trim())return toast('Nhập tiêu đề hoặc nội dung');let x=S.projects.find(x=>x.id===id);if(x){Object.assign(x,{title:t,body:$('#pb').value,img:tmp,u:Date.now()});ev(`Edited project “${t}”`)}else{S.projects.unshift({id:uid(),title:t,body:$('#pb').value,img:tmp,c:Date.now(),u:Date.now()});ev(`Added project “${t}”`)}save();closeM();rH()}
+ else if(a==='pdel'){S.projects=S.projects.filter(x=>x.id!==id);save();closeM();rH()}
+ else if(a==='subj'){ui.subj=id;rW()}
+ else if(a==='tt'){ui.tt=v;rW()}
+ else if(a==='subadd'){modal(`<h3>Thêm môn học</h3><label>TÊN MÔN</label><input id="sname" class="s" placeholder="VD: Tin học 12"><div class="btns"><button class="b" data-a="close">HỦY</button><button class="b p" data-a="subsave">THÊM</button></div>`)}
+ else if(a==='subsave'){const nm=$('#sname').value.trim();if(!nm)return toast('Nhập tên môn');S.subjects.push({id:uid(),name:nm});ev(`Added subject \u201c${nm}\u201d`);save();closeM();rW()}
+ else if(a==='back'){flush();if(ui.note){ui.note=null}else if(ui.subj){ui.subj=null}else if(ui.tt){ui.tt=null}rW()}
+ else if(a==='nnew'){const n={id:uid(),sid:ui.subj,title:'',html:'',w:0,c:Date.now(),u:Date.now()};S.notes.push(n);save();ui.note=n.id;rW();$('#nt').focus()}
+ else if(a==='note'){ui.note=id;rW()}
+ else if(a==='ndel'){if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='✓?';return setTimeout(()=>{b.dataset.c='';},2500)}clearTimeout(tm);pend=null;S.notes=S.notes.filter(n=>n.id!==id);save();ui.note=null;rW()}
+ else if(a==='madd'){const u=$('#mu').value.trim(),vd=vid(u);if(!vd)return toast('Link YouTube không hợp lệ');const t={id:uid(),u,v:vd};S.music.push(t);save();$('#mu').value='';rM();playT(t.id)}
+ else if(a==='mplay'){e.preventDefault();playT(id)}else if(a==='mdel'){S.music=S.music.filter(t=>t.id!==id);save();rM()}
+ else if(a==='mgo'){cur?playT(cur.id,tsec($('#st0').value)):toast('Hãy thêm video trước')}
+ else if(a==='aitoggle')aiToggle();
+ else if(a==='gsearch'){const q=($('#gq').value||'').trim();if(!q)return toast('Nhập từ khoá trước đã');S.gsearch=[q,...(S.gsearch||[]).filter(x=>x!==q)].slice(0,8);save();window.open('https://www.google.com/search?q='+encodeURIComponent(q),'_blank');rGg()}
+ else if(a==='gagain'){window.open('https://www.google.com/search?q='+encodeURIComponent(v),'_blank')}
+ else if(a==='gsdel'){S.gsearch.splice(+b.dataset.i,1);save();rGg()}
+ else if(a==='gopen'){window.open(v,'_blank')}
+ else if(a==='gadd'){tmp='';modal(`<h3>Upload image</h3><label>TITLE</label><input id="gt" class="s" placeholder="Tiêu đề ảnh"><label>IMAGE</label><input type="file" id="mf" accept="image/*"><img id="mi" class="pvw" hidden><div class="btns"><button class="b" data-a="close">CANCEL</button><button class="b p" data-a="gsave">POST</button></div>`)}
+ else if(a==='gsave'){if(!tmp)return toast('Hãy chọn ảnh');const t=$('#gt').value.trim()||'Untitled';S.gallery.unshift({id:uid(),title:t,img:tmp,c:Date.now()});ev(`Posted photo “${t}”`);save();closeM();rG()}
+ else if(a==='gview'){const x=S.gallery.find(x=>x.id===id);$('#lb').innerHTML=`<img src="${x.img}"><b>${esc(x.title)}</b><span class="meta">${fmt(x.c)}</span><div class="btns"><button class="b" data-a="gdel" data-id="${id}">DELETE</button><button class="b p" onclick="$('#lb').classList.remove('on')">CLOSE</button></div>`;$('#lb').classList.add('on')}
+ else if(a==='gdel'){S.gallery=S.gallery.filter(x=>x.id!==id);save();$('#lb').classList.remove('on');rG()}
+ else if(a==='clkmode'){clkMode=v;renderClk()}
+ else if(a==='swtoggle'){swRun=!swRun;clearInterval(swInt);if(swRun)swInt=setInterval(swTick,1000);renderClk()}
+ else if(a==='swreset'){swRun=false;clearInterval(swInt);swT=0;renderClk()}
+ else if(a==='cdtoggle'){if(cdRun){cdRun=false;clearInterval(cdInt)}else{const m=Math.max(1,+($('#cdmin')?.value||5));cdInitial=m*60;if(cdT<=0)cdT=cdInitial;cdRun=true;cdInt=setInterval(cdTick,1000)}renderClk()}
+ else if(a==='cdreset'){cdRun=false;clearInterval(cdInt);cdT=cdInitial;renderClk()}
+ else if(a==='bg'){S.set.bg=v;save();apply();rS()}else if(a==='acc'){S.set.accent=v;save();apply();rS()}
+ else if(a==='expcopy'){navigator.clipboard.writeText($('#exp').value).then(()=>toast('Đã copy — dán sang thiết bị khác ở mục Import')).catch(()=>toast('Hãy bôi đen ô mã rồi copy thủ công'))}
+ else if(a==='impgo'){const raw=$('#imp').value.trim();if(!raw)return toast('Dán mã trước đã');try{const d=JSON.parse(decodeURIComponent(escape(atob(raw))));S=Object.assign(structuredClone(DEF),d);S.set=Object.assign({},DEF.set,S.set);S.profile=Object.assign({},DEF.profile,S.profile);S.tt=S.tt||{};S.gsearch=S.gsearch||[];save();toast('Đã nhập dữ liệu ✓');rS();rG()}catch(err){toast('Mã không hợp lệ')}}
+ else if(a==='reset'){if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='CLICK AGAIN TO CONFIRM';return}localStorage.removeItem('har_hub_v1');location.reload()}
+});
+const closeM=()=>$('#md').classList.remove('on');
+document.addEventListener('change',async e=>{const t=e.target;
+ if(t.id==='mf'&&t.files[0]){tmp=await cmp(t.files[0]);const i=$('#mi');i.src=tmp;i.hidden=false}
+ else if(t.id==='bf'&&t.files[0]){S.set.bgImg=await cmp(t.files[0],1600);S.set.bg='img';save();apply()}
+ else if(t.dataset.t){S.set[t.dataset.t]=t.checked;save();apply()}
+ else if(t.dataset.tt){S.tt[t.dataset.tt][+t.dataset.r][+t.dataset.c]=t.value;save()}});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.dataset.s){S.set[t.dataset.s]=t.type==='range'||t.type==='number'?+t.value:t.value;save();apply();if(t.type==='range')t.parentElement.firstElementChild.textContent=t.parentElement.firstElementChild.textContent.replace(/\d+/,t.value)}
+ else if(t.id==='nt'||t.id==='nc')autosave();
+ else if(t.id==='cdmin'&&!cdRun){cdInitial=Math.max(1,+t.value||5)*60;cdT=cdInitial;const e=$('#cdd');if(e)e.textContent=f2b(cdT)}});
+document.addEventListener('paste',e=>{if(e.target.id==='nc'){e.preventDefault();document.execCommand('insertText',false,e.clipboardData.getData('text/plain'))}});
+document.addEventListener('mousedown',e=>{if(e.target.closest('.tb,#cm'))e.preventDefault()});
+document.addEventListener('contextmenu',e=>{const s=getSelection();if(e.target.closest('#nc')&&!s.isCollapsed){e.preventDefault();const c=$('#cm');c.style.display='block';c.style.left=Math.min(e.clientX,innerWidth-180)+'px';c.style.top=Math.min(e.clientY,innerHeight-300)+'px'}});
+addEventListener('keydown',e=>{if(e.target&&e.target.id==='gq'&&e.key==='Enter'){e.preventDefault();$('[data-a="gsearch"]')?.click()}});
+apply();show('h');rG();
+// ---------- password lock ----------
+(function(){const L=$('#lock');function tryPw(){if($('#pw').value.trim()==='052009'){L.style.display='none'}else{L.classList.remove('shake');void L.offsetWidth;L.classList.add('shake');$('#pwerr').textContent='Sai mật khẩu, thử lại';$('#pw').value=''}}
+ $('#pwok').onclick=tryPw;$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryPw()});setTimeout(()=>$('#pw').focus(),300)})();
+</script>
+</body>
+</html>
